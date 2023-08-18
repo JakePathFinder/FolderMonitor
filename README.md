@@ -1,4 +1,4 @@
-# FolderMonitor : Micro-Services Question
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/fad2591a-dfbd-49a7-adbd-68d7701e5eb2)# FolderMonitor : Micro-Services Question
 
 Folder monitor encorporates 2 Micro-Services:
 * **FileListener** (A.K.A _Service A_)- Enables monitoring a folder for files change events (using **FileSystemWatcher**)
@@ -158,6 +158,13 @@ Utilizing Extension Methods found at the **Common** project the code is kept cle
 2. **RequestLoggingMiddleware**: Automatically Logs every incoming and outgoing request\response.
    > :memo: **Note:** Cloud native tools such as Application Insights can automatically collect such information.
    
+### AppConfig.cs (&CommonConfig.cs)
+As mentioned the Application Settings are stores in appsettings.json
+In order to use **DI** to inject services with **structured configuration** (agains to pulling by path string),<br>
+An **AppConfig.cs** class is introduced and registered as a configuration.
+
+Example, The setting _MaxAllowedFolders_, from configuration to Class, to usage in DI:
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/ac3b52ee-c557-48f4-b7e2-6a3d8345f87f)
 
 
 
