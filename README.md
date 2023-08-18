@@ -1,4 +1,4 @@
-![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/0a033383-f68a-4e3a-9e52-f853328f039b)![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/ba2362e3-311b-4be0-bef0-a7a5bc67236f)# FolderMonitor : Micro-Services Question
+# FolderMonitor : Micro-Services Question
 
 Folder monitor encorporates 2 Micro-Services:
 * **FileListener** (A.K.A _Service A_)- Enables monitoring a folder for files change events (using **FileSystemWatcher**)
