@@ -1,4 +1,4 @@
-![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/fad2591a-dfbd-49a7-adbd-68d7701e5eb2)# FolderMonitor : Micro-Services Question
+# FolderMonitor : Micro-Services Question
 
 Folder monitor encorporates 2 Micro-Services:
 * **FileListener** (A.K.A _Service A_)- Enables monitoring a folder for files change events (using **FileSystemWatcher**)
@@ -251,8 +251,66 @@ The queues show the FileEventEmitted Queue:
 > ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/6ac6d305-40bf-463d-bd8f-20dd55ba401e)
 
 
+# Main System Flow
+
+```mermaid
+sequenceDiagram
+Alice ->> Bob: Hello Bob, how are you?
+Bob-->>John: How about you John?
+Bob--x Alice: I am good thanks!
+Bob-x John: I am good thanks!
+Note right of John: Bob thinks a long<br/>long time, so long<br/>that the text does<br/>not fit on a row.
+
+Bob-->Alice: Checking with John...
+Alice->John: Yes... John, how are you?
+```
 
 
+
+```mermaid
+sequenceDiagram
+    participant User as User
+    participant FolderController as FolderController
+    participant FolderService as FolderService
+    participant FolderMonitoringService as FolderMonitoringService
+    participant Thread as Thread
+    participant FileSystemWatcher as FileSystemWatcher
+
+    User->>FolderController: AddFolder(foldername)
+    FolderController->>FolderService: AddFolderAsync(foldername)
+    FolderService->>FolderService: ValidateAddFolder(folderName)
+    FolderService->>FolderMonitoringService: StartMonitoring(folderName)
+    FolderMonitoringService->>Thread: MonitorFolder(folderName)
+    Thread->>FolderMonitoringService: Initiate Monitoring
+    FolderMonitoringService->>FileSystemWatcher: Invoke
+```
+
+```mermaid
+sequenceDiagram
+    participant FileSystemWatcher as FileSystemWatcher
+    participant FileSystemEventHandler as FileSystemEventHandler
+    participant FolderMonitoringService as FolderMonitoringService
+    participant ActionBlock as ActionBlock
+    participant RabbitMqService as RabbitMqService
+
+    FileSystemWatcher->>FileSystemEventHandler: Emit Event(Sender, FileSystemEventArgs)
+    FileSystemEventHandler->>FolderMonitoringService: Send to ActionBlock
+    Note over FolderMonitoringService: Buffered and Parallel Processing
+    FolderMonitoringService->>ActionBlock: Wrap with Date
+    ActionBlock->>RabbitMqService: Send(FileEventEmittedMessage)
+```
+```mermaid
+sequenceDiagram
+    participant FileEventHandlerService as FileEventHandlerService
+    participant RabbitMqService as RabbitMqService
+    participant Queue as Queue
+    participant FileEventRepo as FileEventRepo
+
+    FileEventHandlerService->>RabbitMqService: Subscribe()
+    Queue-->>FileEventHandlerService: Message Arrival
+    Note over FileEventHandlerService: If not a folder, process
+    FileEventHandlerService->>FileEventRepo: CreateAsync
+```
 
 # Troubleshooting
 * **Issue:** Resource startup
