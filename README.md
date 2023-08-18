@@ -1,4 +1,4 @@
-![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/bfe1fd66-b516-4535-bec6-7c5f1ff3a5f3)![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/8089d578-9e20-4a1f-8541-066cbee465f6)# FolderMonitor : Micro-Services Question
+# FolderMonitor : Micro-Services Question
 
 Folder monitor encorporates 2 Micro-Services:
 * **FileListener** (A.K.A _Service A_)- Enables monitoring a folder for files change events (using **FileSystemWatcher**)
@@ -125,7 +125,6 @@ Following an API request, the data flows from the Controller, to the service, th
 graph LR;
 A((Controller)) --> B((Service)) --> C((Repo));
 ```
-Highlighted at the Project Explorer:<br>
 
 
 ### DTO and Domain Model
