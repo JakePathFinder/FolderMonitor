@@ -32,6 +32,23 @@ In order to enjoy these fruits, please verify you have the following prerequisit
 * .Net 7 Installed [Get it here](https://dotnet.microsoft.com/en-us/download)
 * Docker Desktop Installed [Get it here](https://www.docker.com/products/docker-desktop/)
 * Access to [Docker Hub](https://hub.docker.com/) container images library
+* Issue a **dev certificate** to allow for **https** communication
+  - For your convenience, i've created some batch files create a dev certificate for you, using _dotnet_ command
+    <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/a949d56b-04c5-4301-a029-6eeae3a6e1e4)<br>
+  - Upon running, an _output_ folder is created with a varonisdevcert.pfx inside
+   <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/f6da2982-7682-421b-b94b-b50027534f57)<br>
+
+   For more information about issueing dev certificates See [dotnet-dev-certs](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-dev-certs)
+   > :memo: **Note:** This certificate is copied to the containers upon running.
+   > <br>Please verify the _CERTIFICATE_FOLDER_ .env variable is correct
+   <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/d21d3f8e-4857-4318-aeb2-978f58fc391c)<br>
+   > :warning: **Warning:** Since Dev certificates are not secure, please clear them when you are done.
+   > This can be done using _clear_dev_certificates.bat_
+   > These certificates are not intended to be used in production.
+   
+
+
+    
 
 ## Cloning the project
 Please follow these steps to get your code up & running:
@@ -45,18 +62,18 @@ Configuration files and Environment variables are attached to the solution for a
 Note: In a real production scenario, these settings should be ommitted from the repo and be populated by the pipeling using a keyvault.
 
 Following are the main configuration files:
-* <Project Folder>\appsettings.json:
-  ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/633c9a4e-ef1d-4325-b95e-8fab5940116a)
+* \<Project Folder\>\\appsettings.json:
+  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/633c9a4e-ef1d-4325-b95e-8fab5940116a)<br>
   Contains General configurations such as Logging, Log4Net
-  As well as custome configurations for the Common project (**CommonConfig**) and the current project (**AppConfig**)
-  ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/c5c6d7b7-23e8-42e7-b449-142487b7c17b)
+  <br>As well as custome configurations for the Common project (**CommonConfig**) and the current project (**AppConfig**)
+  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/c5c6d7b7-23e8-42e7-b449-142487b7c17b)<br>
 * .env File
-  ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/71985f60-6153-4d5b-873a-eb3048171537)
+  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/71985f60-6153-4d5b-873a-eb3048171537)<br>
   Contains environment variables used by docker-compose and the containerized services  
 * docker-compose.yml
-  ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/a3c0c471-f9ea-45be-aec3-b562ecd4c448)
+  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/a3c0c471-f9ea-45be-aec3-b562ecd4c448)<br>
   Main settings for the container services and container orcestration.
-  Provides settings to backend container services, such as name, ports, enviroment variables, volumes and dependencies.
+  <br>Provides settings to backend container services, such as name, ports, enviroment variables, volumes and dependencies.
 
 
 ## First Time Run
