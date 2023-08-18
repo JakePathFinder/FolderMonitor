@@ -6,6 +6,10 @@ Folder monitor encorporates 2 Micro-Services:
 * **EventManager** (A.K.A _Service B_)- 
   - Persists the emitted FileEvents to memory cache
   - Exposes Query(Print) APIs for the last x events: **LastEventsByFolder**, **LastEventsByEventType** & **LastEvents** (All recent x events)
+
+The solution Utilizes: 
+* **Redis** as a high performant, thread safe cached memory
+* **RabbitMq** for message queueing of events emitted by **FileListener** to be processed by **EventManager** (A.K.A Pub-Sub)
     
 ## Some images
 File Listener Swagger (Service A) [@https://localhost:5001/swagger/index.html](https://localhost:5001/swagger/index.html)
@@ -85,7 +89,23 @@ Following are the main configuration files:
   After which, we'll be able to run the project using that configuration:
   <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/b43cf668-65ea-4998-8312-7b391ac7ed74)<br>
 ### Running the project
-WIP
+Running the solution triggers the following flow:
+1. docker-compose.yml configuration is being set up, running "docker compose up" behind the scenes. Following which:
+   - Docker images are automatically being pulled (Unless the already exist)
+   - Docker containers are created and launched for each of the following service:
+     + FileListener Service
+     + EventHandler Service
+     + RabbitMq (varonisrmq)
+     + Redis
+    The running containers can bee seen at DockerDesktop -> Containers, under docker-compose (a random name suffix is added to allow other containers on the same host)
+    <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/e1976c37-8553-40cc-899f-dbfa096f9027)<br>
+2. A Swagger page is loaded for the default project (FileListener [@https://localhost:5001/swagger/index.html](https://localhost:5001/swagger/index.html))
+   <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/76f16d52-1592-4e8e-85df-400033cd0de0)<br>
+   Since only 1 project is automatically launched, we'd need to open the other manually, by duplicating the tab and changing the port to 5003
+   EventHandler [@https://localhost:5003/swagger/index.html](https://localhost:5003/swagger/index.html))
+    <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/becf9d7d-1c6b-4e04-a4ac-c6d4a97963d3)<br>
+
+   **Congratulations !** We noe have an up & Running project !
 
 
 
