@@ -253,19 +253,6 @@ The queues show the FileEventEmitted Queue:
 
 # Main System Flow
 
-```mermaid
-sequenceDiagram
-Alice ->> Bob: Hello Bob, how are you?
-Bob-->>John: How about you John?
-Bob--x Alice: I am good thanks!
-Bob-x John: I am good thanks!
-Note right of John: Bob thinks a long<br/>long time, so long<br/>that the text does<br/>not fit on a row.
-
-Bob-->Alice: Checking with John...
-Alice->John: Yes... John, how are you?
-```
-
-
 
 ```mermaid
 sequenceDiagram
@@ -291,24 +278,29 @@ sequenceDiagram
     participant FileSystemEventHandler as FileSystemEventHandler
     participant DataFlowActionBlock as DataFlowActionBlock
     participant RabbitMqService as RabbitMqService
+    participant Queue as Queue
 
     FileSystemWatcher->>FileSystemEventHandler: File Change Event
     FileSystemEventHandler->>DataFlowActionBlock: FileSystemEventArgs
     Note over DataFlowActionBlock: Buffered and Parallel Processing
     DataFlowActionBlock->>DataFlowActionBlock: FileEventEmittedMessage(Event, DateTime.UtcNow)
     DataFlowActionBlock->>RabbitMqService: Send(FileEventEmittedMessage)
+    RabbitMqService-->>Queue: <Message>
 ```
+
+
 ```mermaid
 sequenceDiagram
-    participant FileEventHandlerService as FileEventHandlerService
-    participant RabbitMqService as RabbitMqService
     participant Queue as Queue
+    participant RabbitMqService as RabbitMqService
+    participant FileEventHandlerService as FileEventHandlerService
     participant FileEventRepo as FileEventRepo
 
     FileEventHandlerService->>RabbitMqService: Subscribe()
-    Queue-->>FileEventHandlerService: Message Arrival
-    Note over FileEventHandlerService: If not a folder, process
-    FileEventHandlerService->>FileEventRepo: CreateAsync
+    RabbitMqService-->>Queue: Observe
+    RabbitMqService-->>FileEventHandlerService: <Message>
+    FileEventHandlerService->>FileEventHandlerService: [IsFile?] Process --> Model.FileEvent
+    FileEventHandlerService->>FileEventRepo: Store(Model.FileEvent)
 ```
 
 # Troubleshooting
