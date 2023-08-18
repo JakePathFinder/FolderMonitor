@@ -167,6 +167,33 @@ Example, The setting _MaxAllowedFolders_, from configuration to Class, to usage 
 ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/ac3b52ee-c557-48f4-b7e2-6a3d8345f87f)
 
 
+# Memory cached persistancy 
+Since the requiremend is to use memory cache, the considerations were:
+* **ConcurrentDictionary**: Thread safe, but works only for a single instance services. **Micro services should scaled**
+* **Entity Framework In-Memory DB**: Possible, easy to use, yet has an overhead and does not scale.
+* **Redis cache**: Extremely fast, thread safe (actions are atomic) and Scalable.
+**Redis** was selected.
+
+## Usage
+IRepo<T> is used as a Data Abstraction Layer (DAL)
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/099b1a6a-0357-4708-9216-985f7ae02c57)
+
+In FileListener Service:
+* The actively monitored folders (Using Add\Remove folders APIs) are persisted to a simple Set using the **IDistributedSetRepo** interface
+  Note: The Get methods where not needed, hence spared from the IRepo. A GetAll was added to IDistributedSet interface
+  ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/70429a9b-e9e8-41df-8fcb-8afd2cf4e2bb)
+
+* The interface is implemented using DistributedSerRepoBase abstract class:
+  ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/1c069010-d558-4375-9291-b298fc6d6471)
+
+  * Which then can be inherited by other types very simply (Only setting the matching key):
+    ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/8480307c-106f-4e8e-840d-1902c577e0af)
+    (Note: Although possible, due to time contraints, the SortedSets used for indexing at the EventManagers's FileEventRepo where implemented naively.)
+
+
+
+
+
 
 
 
