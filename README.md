@@ -282,22 +282,21 @@ sequenceDiagram
     FolderService->>FolderMonitoringService: StartMonitoring(folderName)
     FolderMonitoringService->>Thread: MonitorFolder(folderName)
     Thread->>FolderMonitoringService: Initiate Monitoring
-    FolderMonitoringService->>FileSystemWatcher: Invoke
+    Thread->>FileSystemWatcher: Invoke
 ```
 
 ```mermaid
 sequenceDiagram
     participant FileSystemWatcher as FileSystemWatcher
     participant FileSystemEventHandler as FileSystemEventHandler
-    participant FolderMonitoringService as FolderMonitoringService
-    participant ActionBlock as ActionBlock
+    participant DataFlowActionBlock as DataFlowActionBlock
     participant RabbitMqService as RabbitMqService
 
-    FileSystemWatcher->>FileSystemEventHandler: Emit Event(Sender, FileSystemEventArgs)
-    FileSystemEventHandler->>FolderMonitoringService: Send to ActionBlock
-    Note over FolderMonitoringService: Buffered and Parallel Processing
-    FolderMonitoringService->>ActionBlock: Wrap with Date
-    ActionBlock->>RabbitMqService: Send(FileEventEmittedMessage)
+    FileSystemWatcher->>FileSystemEventHandler: File Change Event
+    FileSystemEventHandler->>DataFlowActionBlock: FileSystemEventArgs
+    Note over DataFlowActionBlock: Buffered and Parallel Processing
+    DataFlowActionBlock->>DataFlowActionBlock: FileEventEmittedMessage(Event, DateTime.UtcNow)
+    DataFlowActionBlock->>RabbitMqService: Send(FileEventEmittedMessage)
 ```
 ```mermaid
 sequenceDiagram
