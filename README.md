@@ -58,8 +58,9 @@ Some IDEs allow you to browse GitHub\AzureDevops:
 ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/194544a4-bcfb-40b5-b7ec-5f081bf4144f)
 
 ## Configuring the solution
-Configuration files and Environment variables are attached to the solution for an early kickoff.
-Note: In a real production scenario, these settings should be ommitted from the repo and be populated by the pipeling using a keyvault.
+To make it easy, the solution arrives with the config. files and Environment variables already set up.
+> :memo: **Note:** In a real production scenario, these settings should be ommitted from the repo and ought to be populated by the pipeline using a keyvault.
+
 
 Following are the main configuration files:
 * \<Project Folder\>\\appsettings.json:
