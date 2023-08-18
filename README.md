@@ -1,4 +1,4 @@
-![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/ba2362e3-311b-4be0-bef0-a7a5bc67236f)# FolderMonitor : Micro-Services Question
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/0a033383-f68a-4e3a-9e52-f853328f039b)![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/ba2362e3-311b-4be0-bef0-a7a5bc67236f)# FolderMonitor : Micro-Services Question
 
 Folder monitor encorporates 2 Micro-Services:
 * **FileListener** (A.K.A _Service A_)- Enables monitoring a folder for files change events (using **FileSystemWatcher**)
@@ -32,8 +32,21 @@ In order to enjoy these fruits, please verify you have the following prerequisit
 * .Net 7 Installed [Get it here](https://dotnet.microsoft.com/en-us/download)
 * Docker Desktop Installed [Get it here](https://www.docker.com/products/docker-desktop/)
 * Access to [Docker Hub](https://hub.docker.com/) container images library
-* Issue a **dev certificate** to allow for **https** communication
-  - For your convenience, i've created some batch files create a dev certificate for you, using _dotnet_ command
+
+
+## Cloning the project
+Please follow these steps to clone the repository to your local machine:
+1. Open your favorite IDE (Preferrably **VisualStudio 2022**)
+2. Clone the repository [Here](https://github.com/JakePathFinder/FolderMonitor.git) (Main Brach is ok)
+Some IDEs allow you to browse GitHub\AzureDevops:
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/194544a4-bcfb-40b5-b7ec-5f081bf4144f)
+
+
+## Issuing a security certificate
+* Since the services communicate securely using **https**, we need to self-issue a security certificate.
+  <br>Developers can issue a **dev certificate** for these exact purposes.
+  - For your convenience, i've prepared 2 scripts that handles creating & removing dev certificates for you, using _dotnet_ command.
+    <br> The scripts are located under the _certificates_ folder
     <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/a949d56b-04c5-4301-a029-6eeae3a6e1e4)<br>
   - Upon running, an _output_ folder is created with a varonisdevcert.pfx inside
    <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/f6da2982-7682-421b-b94b-b50027534f57)<br>
@@ -45,22 +58,10 @@ In order to enjoy these fruits, please verify you have the following prerequisit
    > :warning: **Warning:** Since Dev certificates are not secure, please clear them when you are done.
    > This can be done using _clear_dev_certificates.bat_
    > These certificates are not intended to be used in production.
-   
-
-
-    
-
-## Cloning the project
-Please follow these steps to get your code up & running:
-1. Open your favorite IDE (Preferrably **VisualStudio 2022**)
-2. Clone the repository [Here](https://github.com/JakePathFinder/FolderMonitor.git) (Main Brach is ok)
-Some IDEs allow you to browse GitHub\AzureDevops:
-![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/194544a4-bcfb-40b5-b7ec-5f081bf4144f)
 
 ## Configuring the solution
 To make it easy, the solution arrives with the config. files and Environment variables already set up.
 > :memo: **Note:** In a real production scenario, these settings should be ommitted from the repo and ought to be populated by the pipeline using a keyvault.
-
 
 Following are the main configuration files:
 * \<Project Folder\>\\appsettings.json:
@@ -76,9 +77,37 @@ Following are the main configuration files:
   Main settings for the container services and container orcestration.
   <br>Provides settings to backend container services, such as name, ports, enviroment variables, volumes and dependencies.
 
+## 1st Time Run
+### Set Debug\Run Configuration
+* In order to enable the 1-Click setup, we need to set docker-compose as the run configuration.
+  <br> We can do so by right clicking on the solution -> Properties -> Startup Project -> select _docker-compose_ as a single startup project.
+  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/fb9e2a7e-bc85-4222-a205-5c04e0741ace)<br>
+  After which, we'll be able to run the project using that configuration:
+  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/b43cf668-65ea-4998-8312-7b391ac7ed74)<br>
+### Running the project
+WIP
 
-## First Time Run
-  WIP
+
+
+
+
+# Troubleshooting
+* **Issue:** Resource startup
+  Some services use fixed ports (E.G. RabbitMq, using :5672).<br>
+  On occasion, a port may already be in use, hence it may prevent a service from starting up.
+  Here's an example for such a scenario:
+  ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/09637a23-24ad-4c06-aad9-b904f48fb08b)
+  **Possible Solutions:**
+  1. Sometimes a service takes some time to start up, the container console can be accessed via DockerDektop -> Containers -> selecting the container -> Logs
+     <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/bf64b93d-28dc-4b14-9cdc-5371fd73a392)<br>
+     <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/2272e10a-c977-4bd9-a09e-283b0184a539)<br>
+     At this situation, all we need to do is wait a while for the service to completed initializing. Then _Run_ the solution again.
+  2. Cleaning the solution may release resources occuping the port
+     <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/8ac9d7ae-84e0-4b40-b82a-5c80762b2e53)<br>
+     Shortly, the containers would be cleared and the port should be available.
+  3. If the above did not assist, closing and reopening the IDE after a while (also any cmd windows that may have been in use) - can assist with occupying resources in use.
+     
+
 
 
 
