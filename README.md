@@ -1,259 +1,275 @@
-# FolderMonitor : Micro-Services Question
 
-Folder monitor encorporates 2 Micro-Services:
-* **FileListener** (A.K.A _Service A_)- Enables monitoring a folder for files change events (using **FileSystemWatcher**)
-  - Exposes APIs to enable monitoring: **AddFolder**, **RemoveFolder** + **GetAllFolders** (Fetch monitored folders)
-* **EventManager** (A.K.A _Service B_)- 
-  - Persists the emitted FileEvents to memory cache
-  - Exposes Query(Print) APIs for the last x events: **LastEventsByFolder**, **LastEventsByEventType** & **LastEvents** (All recent x events)
+# FolderMonitor: Micro-Services Overview
 
-The solution Utilizes: 
-* **Redis** as a high performant, thread safe cached memory
-* **RabbitMq** for message queueing of events emitted by **FileListener** to be processed by **EventManager** (A.K.A Pub-Sub)
-    
-## Some images
-File Listener Swagger (Service A) [@https://localhost:5001/swagger/index.html](https://localhost:5001/swagger/index.html)
-![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/b0a13176-94ab-45da-9d55-bfa8b6184333)
+The FolderMonitor solution comprises two micro-services:
 
+* **FileListener** (Also known as _Service A_): 
+  - Monitors specified folders for file change events using **FileSystemWatcher**.
+  - Provides APIs for folder monitoring management: **AddFolder**, **RemoveFolder**, and **GetAllFolders** to retrieve currently monitored folders.
 
-Event Manager Swagger (Service B) [@https://localhost:5003/swagger/index.html](https://localhost:5003/swagger/index.html)
-![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/5b765a7e-e9f0-47b0-bdef-85e5e1ff2274)
+* **EventManager** (Also known as _Service B_): 
+  - Stores emitted FileEvents in memory cache.
+  - Offers query APIs for recent events: **LastEventsByFolder**, **LastEventsByEventType**, and **LastEvents**.
 
-Backend Services (1-Click Deployment)
-![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/bcbce611-b852-4439-ad6c-ecfe69ee8864)
-![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/91c368d8-dfc3-404c-a112-4c5d3f4c6229)
+Technologies integrated:
+* **Redis**: A high-performance, thread-safe memory cache.
+* **RabbitMq**: Message queuing system for event transmission from **FileListener** to **EventManager** (Pub-Sub pattern).
 
-Message Queuing (RabbitMq)
-![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/24427024-5214-4cd7-b21c-6b1b7b5dd103)
+## Snapshots
 
-Solution Structure
-![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/c082310e-f9b6-49f8-9c90-57d874c73a17)
+### File Listener (Service A)
+[Swagger UI](https://localhost:5001/swagger/index.html)
+![File Listener](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/b0a13176-94ab-45da-9d55-bfa8b6184333)
+
+### Event Manager (Service B)
+[Swagger UI](https://localhost:5003/swagger/index.html)
+![Event Manager](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/5b765a7e-e9f0-47b0-bdef-85e5e1ff2274)
+
+### Backend Services 
+(One-click deployment for convenience)
+![Backend Services](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/bcbce611-b852-4439-ad6c-ecfe69ee8864)
+
+### Message Queuing (RabbitMq)
+![RabbitMq](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/24427024-5214-4cd7-b21c-6b1b7b5dd103)
+
+### Solution Structure
+![Solution Structure](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/c082310e-f9b6-49f8-9c90-57d874c73a17)
 
 ## Prerequisites
-Deploying & Running the entire infrastructure is done in 1-click thanks to _Docker-Compose_
 
-In order to enjoy these fruits, please verify you have the following prerequisites set up:
-* .Net 7 Installed [Get it here](https://dotnet.microsoft.com/en-us/download)
-* Docker Desktop Installed [Get it here](https://www.docker.com/products/docker-desktop/)
-* Access to [Docker Hub](https://hub.docker.com/) container images library
+To deploy and run the infrastructure seamlessly, ensure the following are installed:
 
+- .Net 7 [Download here](https://dotnet.microsoft.com/en-us/download)
+- Docker Desktop [Download here](https://www.docker.com/products/docker-desktop/)
+- Access to [Docker Hub](https://hub.docker.com/) for container image libraries.
 
-## Cloning the project
-Please follow these steps to clone the repository to your local machine:
-1. Open your favorite IDE (Preferrably **VisualStudio 2022**)
-2. Clone the repository [Here](https://github.com/JakePathFinder/FolderMonitor.git) (Main Brach is ok)
-Some IDEs allow you to browse GitHub\AzureDevops:
-![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/194544a4-bcfb-40b5-b7ec-5f081bf4144f)
+## Cloning the Project
 
+1. Launch your preferred IDE (Recommended: **VisualStudio 2022**).
+2. Clone the [repository](https://github.com/JakePathFinder/FolderMonitor.git) (Main branch will suffice).
 
-## Issuing a security certificate
-* Since the services communicate securely using **https**, we need to self-issue a security certificate.
-  <br>Developers can issue a **dev certificate** for these exact purposes.
-  - For your convenience, i've prepared 2 scripts that handles creating & removing dev certificates for you, using _dotnet_ command.
-    <br> The scripts are located under the _certificates_ folder
-    <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/a949d56b-04c5-4301-a029-6eeae3a6e1e4)<br>
-  - Upon running, an _output_ folder is created with a varonisdevcert.pfx inside
-   <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/f6da2982-7682-421b-b94b-b50027534f57)<br>
+Some IDEs provide GitHub/AzureDevOps integration:
+<br>![IDE Integration](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/194544a4-bcfb-40b5-b7ec-5f081bf4144f)
 
-   For more information about issueing dev certificates See [dotnet-dev-certs](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-dev-certs)
-   > :memo: **Note:** This certificate is copied to the containers upon running.
-   > <br>Please verify the _CERTIFICATE_FOLDER_ .env variable is correct
-   <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/d21d3f8e-4857-4318-aeb2-978f58fc391c)<br>
-   > :warning: **Warning:** Since Dev certificates are not secure, please clear them when you are done.
-   > This can be done using _clear_dev_certificates.bat_
-   > These certificates are not intended to be used in production.
+## Security Certificate Handling
 
-## Configuring the solution
-To make it easy, the solution arrives with the config. files and Environment variables already set up.
-> :memo: **Note:** In a real production scenario, these settings should be ommitted from the repo and ought to be populated by the pipeline using a keyvault.
+The services communicate securely over **https**, necessitating a self-issued security certificate. Developers can generate a **dev certificate**:
 
-Following are the main configuration files:
-* \<Project Folder\>\\appsettings.json:
-  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/633c9a4e-ef1d-4325-b95e-8fab5940116a)<br>
-  Contains General configurations such as Logging, Log4Net
-  <br>As well as custome configurations for the Common project (**CommonConfig**) and the current project (**AppConfig**)
-  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/c5c6d7b7-23e8-42e7-b449-142487b7c17b)<br>
-* .env File
-  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/71985f60-6153-4d5b-873a-eb3048171537)<br>
-  Contains environment variables used by docker-compose and the containerized services  
-* docker-compose.yml
-  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/a3c0c471-f9ea-45be-aec3-b562ecd4c448)<br>
-  Main settings for the container services and container orcestration.
-  <br>Provides settings to backend container services, such as name, ports, enviroment variables, volumes and dependencies.
+- Two scripts are provided in the _certificates_ folder to streamline the process of creating and removing these certificates.
+- Executing creates an _output_ directory containing `varonisdevcert.pfx`.
+  
+> :warning: **Warning:** These certificates are not designed for production use. Remember to clear them when not in use using _clear_dev_certificates.bat_.
+
+## Solution Configuration
+
+The solution comes pre-configured for ease of use. In real-world scenarios, settings should be secured and populated through a pipeline using a key vault. Primary configurations include:
+
+- **appsettings.json** in each project folder: Contains general and custom configurations.
+- **.env** file: Houses environment variables for docker-compose and container services.
+- **docker-compose.yml**: Essential settings for container services and orchestration.
+
 
 ## 1st Time Run
-### Set Debug\Run Configuration
-* In order to enable the 1-Click setup, we need to set docker-compose as the run configuration.
-  <br> We can do so by right clicking on the solution -> Properties -> Startup Project -> select _docker-compose_ as a single startup project.
-  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/fb9e2a7e-bc85-4222-a205-5c04e0741ace)<br>
-  After which, we'll be able to run the project using that configuration:
-  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/b43cf668-65ea-4998-8312-7b391ac7ed74)<br>
-### Running the project
-Running the solution triggers the following flow:
-1. docker-compose.yml configuration is being set up, running "docker compose up" behind the scenes. Following which:
-   - Docker images are automatically being pulled (Unless the already exist)
-   - Docker containers are created and launched for each of the following service:
-     + FileListener Service
-     + EventHandler Service
-     + RabbitMq (varonisrmq)
-     + Redis
-    The running containers can bee seen at DockerDesktop -> Containers, under docker-compose (a random name suffix is added to allow other containers on the same host)
-    <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/e1976c37-8553-40cc-899f-dbfa096f9027)<br>
-2. A Swagger page is loaded for the default project (FileListener [@https://localhost:5001/swagger/index.html](https://localhost:5001/swagger/index.html))
-   <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/76f16d52-1592-4e8e-85df-400033cd0de0)<br>
-   Since only 1 project is automatically launched, we'd need to open the other manually, by duplicating the tab and changing the port to 5003
-   EventHandler [@https://localhost:5003/swagger/index.html](https://localhost:5003/swagger/index.html))
-    <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/becf9d7d-1c6b-4e04-a4ac-c6d4a97963d3)<br>
 
-   **Congratulations !** We now have an up & Running project !
+### Set Debug/Run Configuration
+
+- Enable the 1-Click setup by setting `docker-compose` as the run configuration:
+    1. Right-click on the solution.
+    2. Navigate to Properties -> Startup Project.
+    3. Select `docker-compose` as a single startup project.
+
+    ![Docker Compose Configuration](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/fb9e2a7e-bc85-4222-a205-5c04e0741ace)
+
+    Once set, you'll be ready to run the project using this configuration:
+
+    ![Run Configuration](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/b43cf668-65ea-4998-8312-7b391ac7ed74)
+
+### Running the project
+
+Executing the solution initiates the following process:
+
+1. `docker-compose.yml` configuration sets up, internally executing "docker compose up":
+    - Automatically pulls Docker images (if they don't exist).
+    - Creates and launches Docker containers for the services: 
+        - FileListener Service
+        - EventHandler Service
+        - RabbitMq (varonisrmq)
+        - Redis
+  
+    View running containers in Docker Desktop -> Containers. They are listed under `docker-compose` (with a random suffix to allow other containers on the same host).
+
+    ![Docker Containers](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/e1976c37-8553-40cc-899f-dbfa096f9027)
+
+2. A Swagger page for the default project, FileListener, is loaded at [https://localhost:5001/swagger/index.html](https://localhost:5001/swagger/index.html).
+
+    ![Swagger Page](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/76f16d52-1592-4e8e-85df-400033cd0de0)
+
+    As only one project auto-launches, you'll need to manually access the other by duplicating the tab and updating the port to 5003 for the EventHandler at [https://localhost:5003/swagger/index.html](https://localhost:5003/swagger/index.html).
+
+    ![EventHandler Swagger](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/becf9d7d-1c6b-4e04-a4ac-c6d4a97963d3)
+
+    **Congratulations!** Your project is now up and running.
 
 
 # Solution & Project Structure
+
 ## Solution Structure
-The solution has 7 projects:
-* 2 micro-services projects, each with its own Test project)
-* A **Common** Project (+ CommonTests) for the common resources (Implementing DRY)
-* And a virtual "docker-compose" project which incorporates the container orchestration.
- <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/fd764adc-88d4-4685-a90d-c116bbcd9d34)<br>
+The solution comprises 7 projects:
+
+* 2 micro-services projects (each accompanied by its own Test project)
+* A **Common** Project (alongside CommonTests) containing shared resources, embracing the DRY (Don't Repeat Yourself) principle.
+* Lastly, a virtual "docker-compose" project facilitates container orchestration.
+
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/fd764adc-88d4-4685-a90d-c116bbcd9d34)
 
 ## Micro-Service Project Structure
-### Controllers, Services & Repos: The Onion Architechture
-<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/75009662-60d3-42d7-a1a3-99bb3cf4e18c)<br>
-The project is built according to the Onion Architecture (See [More Info]([https://blog.allegro.tech/2023/02/onion-architecture.html](https://medium.com/expedia-group-tech/onion-architecture-deed8a554423))) as reflected by its structure.
-Following an API request, the data flows from the Controller, to the service, then to the repo.
+
+### Controllers, Services & Repos: Embracing the Onion Architecture
+
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/75009662-60d3-42d7-a1a3-99bb3cf4e18c)
+
+The project is architected around the Onion Architecture ([More Info](https://medium.com/expedia-group-tech/onion-architecture-deed8a554423)). This design is evident from its structure, where, following an API request, data flows sequentially from the Controller, to the Service, and then to the Repo.
+
 ```mermaid
 graph LR;
 A((Controller)) --> B((Service)) --> C((Repo));
 ```
 
-
 ### DTO and Domain Model
-<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/3ba1c753-7a20-4320-92ac-c1e38bc5cc3e)<br>
-Generally speaking, a _Contoller_ endpoint (API) would be recieved as simple parameters or an DTO for complex objects.<br>
-It should then be mapped to a **DomainModel**, which is Processed by the _Service_, Moved on to the _Repo_.
 
-In our simple case the controllers params. are simple primitives.<br>
-However, as seen in EventHandler's Controller endpoint **LastEvents**, <br>
-the List<**Model.FileEvent**> (results) is mapped to a List<**DTO.FileEvent**> prior to returning the response.<br>
-<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/299fd53b-b614-418d-81b8-7ea8dfea9560)<br>
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/3ba1c753-7a20-4320-92ac-c1e38bc5cc3e)
+
+Typically, a _Controller_ endpoint (API) receives either simple parameters or a DTO for more intricate objects. These are then transformed into a **DomainModel**, processed by the _Service_, and subsequently directed to the _Repo_.
+
+In our scenario, the parameters passed to controllers are straightforward primitives. Nonetheless, as observed in the EventHandler's Controller endpoint **LastEvents**, the results in the form of List<**Model.FileEvent**> are converted to List<**DTO.FileEvent**> before dispatching the response.
+
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/299fd53b-b614-418d-81b8-7ea8dfea9560)
 
 ### Program.cs
-The entry point for the micro-service.<br>
-Utilizing Extension Methods found at the **Common** project the code is kept clear and clean.
-<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/62a44108-0b60-49ce-bbf1-8f11293a1cf3)<br>
 
-* **AddVaronisServices** - Configuring Swagger, Logging (Log4Net), Common Services.<br>
-  It also contains the Common Configuration (E.G Redis, RabbitMq Connection strings) for services (mainly singletons) that belong to that project.
-*  **UseVaronisServices** - After building the "app", Uses the common elements such as the Swagger and the Middleware
+Program.cs serves as the entry point for the micro-service. By leveraging the Extension Methods found in the **Common** project, the code remains concise and organized.
+
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/62a44108-0b60-49ce-bbf1-8f11293a1cf3)
+
+* **AddVaronisServices**: This configures Swagger, sets up Logging (using Log4Net), and integrates Common Services. Furthermore, it houses the Common Configuration (e.g., Redis, RabbitMq Connection strings) for services, primarily those instantiated as singletons.
+* **UseVaronisServices**: Post building the "app", this employs shared elements like Swagger and Middleware.
 
 ### Middleware
+
 ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/804e00a7-24d5-4335-a3e4-275d86d10229)
 
-2 Middlewares exist:
-1. **UnhandledExceptionHandlingMiddleware**: Handles exceptions at the top level of the application (outmost part of the pipeline).
-   It catches the Exception and retuens an ErrorCode (Selectively 400, in production we would diffrentiate by exception type)<br>
-   Utilizing the RequestResponseFactory, it encapsulats a RequestResponse which indicates a failure and the message. <br>
-   ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/54b51f73-c401-4e5d-aad0-f8ca45ac70ba)
-   > :memo: **Note:** In a real production scenario we would obfoscate the message and log the real exception.
-2. **RequestLoggingMiddleware**: Automatically Logs every incoming and outgoing request\response.
-   > :memo: **Note:** Cloud native tools such as Application Insights can automatically collect such information.
-   
-### AppConfig.cs (&CommonConfig.cs)
-As mentioned the Application Settings are stores in appsettings.json
-In order to use **DI** to inject services with **structured configuration** (agains to pulling by path string),<br>
-An **AppConfig.cs** class is introduced and registered as a configuration.
+The solution integrates two middlewares:
 
-Example, The setting _MaxAllowedFolders_, from configuration to Class, to usage in DI:
+1. **UnhandledExceptionHandlingMiddleware**: Positioned at the topmost tier of the application (outermost segment of the pipeline), it snags Exceptions and produces an ErrorCode. Predominantly, a 400 code is returned. With the assistance of the RequestResponseFactory, it wraps the exception into a RequestResponse, indicating an error accompanied by a message.
+   
+   ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/54b51f73-c401-4e5d-aad0-f8ca45ac70ba)
+
+   > :memo: **Note:** In a genuine production environment, the exact message would be obscured and the true exception logged.
+
+2. **RequestLoggingMiddleware**: This middleware logs every inbound and outbound request/response.
+   
+   > :memo: **Note:** Cloud-native utilities, for instance, Application Insights, can automatically gather such data.
+
+### AppConfig.cs (& CommonConfig.cs)
+
+The Application Settings are sourced from the appsettings.json file. To facilitate Dependency Injection for services with **structured configuration**—as opposed to fetching configurations via path strings—a dedicated **AppConfig.cs** class is introduced and registered.
+
+For instance, consider the setting _MaxAllowedFolders_. The journey from its configuration to class instantiation, and ultimately its utilization via DI, is depicted below:
+
 ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/ac3b52ee-c557-48f4-b7e2-6a3d8345f87f)
 
 
-# Memory cached persistancy 
-Since the requiremend is to use memory cache, the considerations were:
-* **ConcurrentDictionary**: Thread safe, but works only for a single instance services. **Micro services should scaled**
-* **Entity Framework In-Memory DB**: Possible, easy to use, yet has an overhead and does not scale.
-* **Redis cache**: Extremely fast, thread safe (actions are atomic) and Scalable.
-**Redis** was selected.
+
+# Memory-Cached Persistence 
+
+Given the requirement to use memory cache, several options were considered:
+* **ConcurrentDictionary**: While it's thread-safe, it's only suitable for single-instance services. Microservices need to be scalable.
+* **Entity Framework In-Memory DB**: This is easy to use but introduces overhead and lacks scalability.
+* **Redis cache**: Known for its speed, thread safety due to atomic operations, and scalability.
+
+Ultimately, **Redis** was the chosen solution.
 
 ## Usage
-IRepo<T> is used as a Data Abstraction Layer (DAL)
-![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/099b1a6a-0357-4708-9216-985f7ae02c57)
 
-### In FileListener Service:
-* The actively monitored folders (Using Add\Remove folders APIs) are persisted to a simple Set using the **IDistributedSetRepo** interface
-  Note: The Get methods where not needed, hence spared from the IRepo. A GetAll was added to IDistributedSet interface
-  ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/70429a9b-e9e8-41df-8fcb-8afd2cf4e2bb)
+`IRepo<T>` acts as a Data Abstraction Layer (DAL).
+<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/099b1a6a-0357-4708-9216-985f7ae02c57)
 
-* The interface is implemented using DistributedSerRepoBase abstract class:
-  ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/1c069010-d558-4375-9291-b298fc6d6471)
+### Within the FileListener Service:
 
-  * Which then can be inherited by other types very simply (Only setting the matching key):
+* Active folder monitoring (via Add/Remove folder APIs) persists to a set through the **IDistributedSetRepo** interface. 
+  > Note: "Get" methods were deemed unnecessary and excluded from the IRepo. However, a "GetAll" method was introduced to the IDistributedSet interface.
+  
+  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/70429a9b-e9e8-41df-8fcb-8afd2cf4e2bb)
+
+* This interface is backed by the `DistributedSerRepoBase` abstract class.
+
+  <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/1c069010-d558-4375-9291-b298fc6d6471)
+
+  * Other types can then inherit from this class, simplifying the process of setting the appropriate key.
     ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/8480307c-106f-4e8e-840d-1902c577e0af)
-    (Note: Although possible, due to time contraints, the SortedSets used for indexing at the EventManagers's FileEventRepo where implemented naively.)
+    > Note: While it's feasible to use SortedSets for indexing in the EventManager's `FileEventRepo`, a straightforward approach was taken due to time constraints.
 
-### In EventHandler Service:
-* An Interface IFileEventRepo Extends _IRepo_ with a _FileEvent_
+### Within the EventHandler Service:
+
+* The `IFileEventRepo` interface extends `_IRepo_` with a `_FileEvent_`.
   ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/73f56fb3-bcc0-4bbb-89c7-4fe5166b3f6c)
 
-* The interface is implemented by the _FileEventRepo_
+* This interface is realized by the `FileEventRepo`.
   ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/ba7aa3e9-6ee5-4b34-8a56-68ac7bd73e35)
 
-### Retrieveing Last x events (Query/Print) Apis
+### Retrieving Last x events (Query/Print) APIs
 
-As implemented in _FileEventRepo_, We need to store all the events and Get Last x by date (All, By Folder or by event)
-As always, there is a trade-off b/w time & space, hence the following methodology was selected:
-1. A Hash collection - Storing the FileEvent data
-2. Utilze SortedSets, to index the FileEvent (just the id) according to optimize the query needs (As often done with redis)
-   * A General SortedSet for storing FileEvent Id's, scored by datetime (Tics)
-   * A SortedSet for storing FileEvent Id's by folder, scored by datetime (Tics)
-   * A SortedSet for storing FileEvent Id's by EventType, scored by datetime (Tics)
-From FileEventRepo:
+In the `FileEventRepo`, we need to store all events and retrieve the latest x events sorted by date. This could be for all events, or filtered by folder or event type. As always, there's a trade-off between time & space. Hence, the following approach was adopted:
+
+1. A Hash collection for storing `FileEvent` data.
+2. Utilization of SortedSets to index the `FileEvent` (by its ID) to optimize querying.
+   * A general SortedSet for storing `FileEvent` IDs, ordered by datetime (ticks).
+   * SortedSets for folder and `EventType`, both sorted by datetime (ticks).
+
+From `FileEventRepo`:
 ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/ee3492a9-cbae-4c9c-b011-51acec41c9ad)
 
-From appsettings.json:
+And from `appsettings.json`:
 ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/1543edeb-893e-4fe8-aa7e-4acdd0acfa72)
 
 
-# Message handling with message queues
+# Message Queue Handling
 
-Events are emitted using **FileListener** service's **FolderMonitoringService** (Using FileSystemWatcher)<br>
-While persistency should be done at the **EventHandler** Service.
+Events are emitted using the **FileListener** service's **FolderMonitoringService** (utilizing `FileSystemWatcher`). However, persistence should be executed by the **EventHandler** Service.
 
-Since a folder may emit multiple events very fast, catching them should be immediate to free up resources ASAP (So wwe dont miss any events).
-Also, since persisting and processing the messages is much slower and does not have to be immediate, we can do so asynchronously.
-Message queues provide us with:
-* **A buffer**, to keep track of emitted events and handle situations where Events are stacking up, more are emitted than the system can handle.
-* A scalable solution for processing messages by multiple consumers
-* Handling mechanisms for Retry & DLQ (Not utilized in the solution) in case the messages fail reaching ther destination.
-* Ability to Encrypt at rest
-* Ability to keep the messages in a broker, in case the service fails
+Due to the potential for rapid event emissions, immediate capture is essential to free up resources as quickly as possible. Moreover, since the process of persisting and managing these messages is relatively slower and not time-sensitive, asynchronous processing is preferable.
 
-RabbitMq was selected as I was looking for something simple which I already know.
+Message queues offer:
+
+* **Buffering**: To manage surges in emitted events and cater to scenarios where event emissions surpass the system's processing capacity.
+* Scalability: Allowing multiple consumers to process messages.
+* Features for message retry and DLQ (Dead Letter Queues). (This feature was not utilized in this solution).
+* Data encryption capabilities.
+* Message preservation, useful in case of service failures.
+
+For these reasons, **RabbitMQ** was chosen due to its simplicity and familiarity.
 
 ## Management Console
 
-The RabbitMQ image selected contains a management console that provides an interface for viewing the Exchanges,Queues and manage the messages
-Go to [http://localhost:15672/](http://localhost:15672/) (Configurable)
-The UserName and Password are determined during the container creation using the Env. vars: RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
-(Found at the .env file)
-<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/232e03f7-cb14-463c-9c22-f3f3d760488a)<br>
+The selected RabbitMQ image comes with a management console, allowing users to view Exchanges, Queues, and manage messages. Visit [http://localhost:15672/](http://localhost:15672/) (configurable). Authentication credentials (username and password) are specified during container setup via the environment variables: `RABBITMQ_DEFAULT_USER` and `RABBITMQ_DEFAULT_PASS` (these can be found in the `.env` file).
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/232e03f7-cb14-463c-9c22-f3f3d760488a)
 
-The queues show the FileEventEmitted Queue:
-<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/c121206c-08a0-4dc9-a880-9b1ddd0d05dd)<br>
+The queues showcase the `FileEventEmitted` Queue:
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/c121206c-08a0-4dc9-a880-9b1ddd0d05dd)
 
 ## Usage
-* A generic (sort of DAL) interface **IMessageQueueService** defines the basic Send, Subscribe, Unsubscribe methods
-<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/25a3f1bb-755e-417c-a69d-2aee0d4ffabe)<br>
-* Implemented by **RabbitMqService**
 
+* The **IMessageQueueService** interface provides basic Send, Subscribe, and Unsubscribe methods.
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/25a3f1bb-755e-417c-a69d-2aee0d4ffabe)
 
-> :memo: **Note:** RabbitMq uses Exchanges & Queues, with several options to use (Direct, Fanout, Etc).<br>
-> A SubscriptionId (ExchangeName:QueueName) is used, to adhere to the interface and allow replacing with another MsgQueue tech in the future.
-> ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/6ac6d305-40bf-463d-bd8f-20dd55ba401e)
+* This interface is realized by **RabbitMqService**.
 
+> :memo: **Note:** RabbitMQ employs Exchanges & Queues with various configurations (Direct, Fanout, etc.). To maintain compatibility with potential future message queue technologies, a `SubscriptionId` (formed from `ExchangeName:QueueName`) is used.
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/6ac6d305-40bf-463d-bd8f-20dd55ba401e)
 
 # Main System Flow
 
-
+## FileListener: Adding a folder to be monitored
 ```mermaid
 sequenceDiagram
     participant User as User
@@ -269,9 +285,10 @@ sequenceDiagram
     FolderService->>FolderMonitoringService: StartMonitoring(folderName)
     FolderMonitoringService->>Thread: MonitorFolder(folderName)
     Thread->>FolderMonitoringService: Initiate Monitoring
-    Thread->>FileSystemWatcher: Invoke
+    Thread->>FileSystemWatcher: Initiate
 ```
 
+## FileListener: File Change Event Emitted Flow
 ```mermaid
 sequenceDiagram
     participant FileSystemWatcher as FileSystemWatcher
@@ -280,7 +297,7 @@ sequenceDiagram
     participant RabbitMqService as RabbitMqService
     participant Queue as Queue
 
-    FileSystemWatcher->>FileSystemEventHandler: File Change Event
+    FileSystemWatcher->>FileSystemEventHandler: Emit File Change Event
     FileSystemEventHandler->>DataFlowActionBlock: FileSystemEventArgs
     Note over DataFlowActionBlock: Buffered and Parallel Processing
     DataFlowActionBlock->>DataFlowActionBlock: FileEventEmittedMessage(Event, DateTime.UtcNow)
@@ -288,7 +305,7 @@ sequenceDiagram
     RabbitMqService-->>Queue: <Message>
 ```
 
-
+## EventHandler: Handle Emitted Event
 ```mermaid
 sequenceDiagram
     participant Queue as Queue
@@ -299,27 +316,35 @@ sequenceDiagram
     FileEventHandlerService->>RabbitMqService: Subscribe()
     RabbitMqService-->>Queue: Observe
     RabbitMqService-->>FileEventHandlerService: <Message>
-    FileEventHandlerService->>FileEventHandlerService: [IsFile?] Process --> Model.FileEvent
-    FileEventHandlerService->>FileEventRepo: Store(Model.FileEvent)
+    FileEventHandlerService->>FileEventHandlerService: Process Message (Check if File)
+    FileEventHandlerService->>FileEventRepo: Persist Model.FileEvent
 ```
 
 # Troubleshooting
-* **Issue:** Resource startup
-  Some services use fixed ports (E.G. RabbitMq, using :5672).<br>
-  On occasion, a port may already be in use, hence it may prevent a service from starting up.
-  Here's an example for such a scenario:
-  ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/09637a23-24ad-4c06-aad9-b904f48fb08b)
-  **Possible Solutions:**
-  1. Sometimes a service takes some time to start up, the container console can be accessed via DockerDektop -> Containers -> selecting the container -> Logs
-     <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/bf64b93d-28dc-4b14-9cdc-5371fd73a392)<br>
-     <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/2272e10a-c977-4bd9-a09e-283b0184a539)<br>
-     At this situation, all we need to do is wait a while for the service to completed initializing. Then _Run_ the solution again.
-  2. Cleaning the solution may release resources occuping the port
-     <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/8ac9d7ae-84e0-4b40-b82a-5c80762b2e53)<br>
-     Shortly, the containers would be cleared and the port should be available.
-  3. If the above did not assist, closing and reopening the IDE after a while (also any cmd windows that may have been in use) - can assist with occupying resources in use.
-     
 
+## Issue: Resource Startup
+
+Certain services operate on fixed ports (e.g., RabbitMq, which uses port :5672). Occasionally, these ports might be occupied, which could prevent the respective service from starting up. The following illustrates a situation where this problem arises:
+
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/09637a23-24ad-4c06-aad9-b904f48fb08b)
+
+### Possible Solutions:
+
+1. **Delayed Service Initialization:** Sometimes, a service may require additional time to initialize. You can monitor the initialization progress by accessing the container's console. To do this, navigate to Docker Desktop -> Containers -> select the desired container -> Logs.
+
+    ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/bf64b93d-28dc-4b14-9cdc-5371fd73a392)
+
+    ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/2272e10a-c977-4bd9-a09e-283b0184a539)
+
+    In such cases, it's advisable to patiently wait for the service to complete its initialization process. Once done, you can attempt to run the solution once more.
+
+2. **Clean the Solution:** Cleaning the solution can help free up the ports that are currently occupied.
+
+    ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/8ac9d7ae-84e0-4b40-b82a-5c80762b2e53)
+
+    After performing this action, the containers will be cleared shortly, and the port should become available.
+
+3. **Restart the IDE:** If the above solutions don't resolve the issue, consider shutting down the IDE and reopening it after waiting for a few moments. Additionally, ensure that any command prompt windows or other potential resource-intensive applications are closed, as they might also be occupying the needed resources.
 
 
 
