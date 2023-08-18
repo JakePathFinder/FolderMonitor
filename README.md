@@ -178,7 +178,7 @@ Since the requiremend is to use memory cache, the considerations were:
 IRepo<T> is used as a Data Abstraction Layer (DAL)
 ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/099b1a6a-0357-4708-9216-985f7ae02c57)
 
-In FileListener Service:
+### In FileListener Service:
 * The actively monitored folders (Using Add\Remove folders APIs) are persisted to a simple Set using the **IDistributedSetRepo** interface
   Note: The Get methods where not needed, hence spared from the IRepo. A GetAll was added to IDistributedSet interface
   ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/70429a9b-e9e8-41df-8fcb-8afd2cf4e2bb)
@@ -190,9 +190,65 @@ In FileListener Service:
     ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/8480307c-106f-4e8e-840d-1902c577e0af)
     (Note: Although possible, due to time contraints, the SortedSets used for indexing at the EventManagers's FileEventRepo where implemented naively.)
 
+### In EventHandler Service:
+* An Interface IFileEventRepo Extends _IRepo_ with a _FileEvent_
+  ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/73f56fb3-bcc0-4bbb-89c7-4fe5166b3f6c)
+
+* The interface is implemented by the _FileEventRepo_
+  ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/ba7aa3e9-6ee5-4b34-8a56-68ac7bd73e35)
+
+### Retrieveing Last x events (Query/Print) Apis
+
+As implemented in _FileEventRepo_, We need to store all the events and Get Last x by date (All, By Folder or by event)
+As always, there is a trade-off b/w time & space, hence the following methodology was selected:
+1. A Hash collection - Storing the FileEvent data
+2. Utilze SortedSets, to index the FileEvent (just the id) according to optimize the query needs (As often done with redis)
+   * A General SortedSet for storing FileEvent Id's, scored by datetime (Tics)
+   * A SortedSet for storing FileEvent Id's by folder, scored by datetime (Tics)
+   * A SortedSet for storing FileEvent Id's by EventType, scored by datetime (Tics)
+From FileEventRepo:
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/ee3492a9-cbae-4c9c-b011-51acec41c9ad)
+
+From appsettings.json:
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/1543edeb-893e-4fe8-aa7e-4acdd0acfa72)
 
 
+# Message handling with message queues
 
+Events are emitted using **FileListener** service's **FolderMonitoringService** (Using FileSystemWatcher)<br>
+While persistency should be done at the **EventHandler** Service.
+
+Since a folder may emit multiple events very fast, catching them should be immediate to free up resources ASAP (So wwe dont miss any events).
+Also, since persisting and processing the messages is much slower and does not have to be immediate, we can do so asynchronously.
+Message queues provide us with:
+* **A buffer**, to keep track of emitted events and handle situations where Events are stacking up, more are emitted than the system can handle.
+* A scalable solution for processing messages by multiple consumers
+* Handling mechanisms for Retry & DLQ (Not utilized in the solution) in case the messages fail reaching ther destination.
+* Ability to Encrypt at rest
+* Ability to keep the messages in a broker, in case the service fails
+
+RabbitMq was selected as I was looking for something simple which I already know.
+
+## Management Console
+
+The RabbitMQ image selected contains a management console that provides an interface for viewing the Exchanges,Queues and manage the messages
+Go to [http://localhost:15672/](http://localhost:15672/) (Configurable)
+The UserName and Password are determined during the container creation using the Env. vars: RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
+(Found at the .env file)
+<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/232e03f7-cb14-463c-9c22-f3f3d760488a)<br>
+
+The queues show the FileEventEmitted Queue:
+<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/c121206c-08a0-4dc9-a880-9b1ddd0d05dd)<br>
+
+## Usage
+* A generic (sort of DAL) interface **IMessageQueueService** defines the basic Send, Subscribe, Unsubscribe methods
+<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/25a3f1bb-755e-417c-a69d-2aee0d4ffabe)<br>
+* Implemented by **RabbitMqService**
+
+
+> :memo: **Note:** RabbitMq uses Exchanges & Queues, with several options to use (Direct, Fanout, Etc).<br>
+> A SubscriptionId (ExchangeName:QueueName) is used, to adhere to the interface and allow replacing with another MsgQueue tech in the future.
+> ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/6ac6d305-40bf-463d-bd8f-20dd55ba401e)
 
 
 
