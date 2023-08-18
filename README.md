@@ -105,7 +105,7 @@ Running the solution triggers the following flow:
    EventHandler [@https://localhost:5003/swagger/index.html](https://localhost:5003/swagger/index.html))
     <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/becf9d7d-1c6b-4e04-a4ac-c6d4a97963d3)<br>
 
-   **Congratulations !** We noe have an up & Running project !
+   **Congratulations !** We now have an up & Running project !
 
 
 
