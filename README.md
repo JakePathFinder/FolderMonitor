@@ -1,4 +1,4 @@
-# FolderMonitor : Micro-Services Question
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/bfe1fd66-b516-4535-bec6-7c5f1ff3a5f3)![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/8089d578-9e20-4a1f-8541-066cbee465f6)# FolderMonitor : Micro-Services Question
 
 Folder monitor encorporates 2 Micro-Services:
 * **FileListener** (A.K.A _Service A_)- Enables monitoring a folder for files change events (using **FileSystemWatcher**)
@@ -106,6 +106,60 @@ Running the solution triggers the following flow:
     <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/becf9d7d-1c6b-4e04-a4ac-c6d4a97963d3)<br>
 
    **Congratulations !** We now have an up & Running project !
+
+
+# Solution & Project Structure
+## Solution Structure
+The solution has 7 projects:
+* 2 micro-services projects, each with its own Test project)
+* A **Common** Project (+ CommonTests) for the common resources (Implementing DRY)
+* And a virtual "docker-compose" project which incorporates the container orchestration.
+ <br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/fd764adc-88d4-4685-a90d-c116bbcd9d34)<br>
+
+## Micro-Service Project Structure
+### Controllers, Services & Repos: The Onion Architechture
+<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/75009662-60d3-42d7-a1a3-99bb3cf4e18c)<br>
+The project is built according to the Onion Architecture (See [More Info]([https://blog.allegro.tech/2023/02/onion-architecture.html](https://medium.com/expedia-group-tech/onion-architecture-deed8a554423))) as reflected by its structure.
+Following an API request, the data flows from the Controller, to the service, then to the repo.
+```mermaid
+graph LR;
+A((Controller)) --> B((Service)) --> C((Repo));
+```
+Highlighted at the Project Explorer:<br>
+
+
+### DTO and Domain Model
+<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/3ba1c753-7a20-4320-92ac-c1e38bc5cc3e)<br>
+Generally speaking, a _Contoller_ endpoint (API) would be recieved as simple parameters or an DTO for complex objects.<br>
+It should then be mapped to a **DomainModel**, which is Processed by the _Service_, Moved on to the _Repo_.
+
+In our simple case the controllers params. are simple primitives.<br>
+However, as seen in EventHandler's Controller endpoint **LastEvents**, <br>
+the List<**Model.FileEvent**> (results) is mapped to a List<**DTO.FileEvent**> prior to returning the response.<br>
+<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/299fd53b-b614-418d-81b8-7ea8dfea9560)<br>
+
+### Program.cs
+The entry point for the micro-service.<br>
+Utilizing Extension Methods found at the **Common** project the code is kept clear and clean.
+<br>![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/62a44108-0b60-49ce-bbf1-8f11293a1cf3)<br>
+
+* **AddVaronisServices** - Configuring Swagger, Logging (Log4Net), Common Services.<br>
+  It also contains the Common Configuration (E.G Redis, RabbitMq Connection strings) for services (mainly singletons) that belong to that project.
+*  **UseVaronisServices** - After building the "app", Uses the common elements such as the Swagger and the Middleware
+
+### Middleware
+![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/804e00a7-24d5-4335-a3e4-275d86d10229)
+
+2 Middlewares exist:
+1. **UnhandledExceptionHandlingMiddleware**: Handles exceptions at the top level of the application (outmost part of the pipeline).
+   It catches the Exception and retuens an ErrorCode (Selectively 400, in production we would diffrentiate by exception type)<br>
+   Utilizing the RequestResponseFactory, it encapsulats a RequestResponse which indicates a failure and the message. <br>
+   ![image](https://github.com/JakePathFinder/FolderMonitor/assets/59265424/54b51f73-c401-4e5d-aad0-f8ca45ac70ba)
+   > :memo: **Note:** In a real production scenario we would obfoscate the message and log the real exception.
+2. **RequestLoggingMiddleware**: Automatically Logs every incoming and outgoing request\response.
+   > :memo: **Note:** Cloud native tools such as Application Insights can automatically collect such information.
+   
+
 
 
 
