@@ -1,6 +1,6 @@
 ﻿using Common.Services.Interfaces;
 using FileListener.Constants;
-using System.Drawing;
+using FileListener.Repos.Interfaces;
 
 namespace FileListenerTests.Services
 {
@@ -10,6 +10,7 @@ namespace FileListenerTests.Services
         private readonly IUtilitiesService _utilities = Substitute.For<IUtilitiesService>();
         private readonly IOptions<AppConfig> _config = Substitute.For<IOptions<AppConfig>>();
         private readonly IMessageQueueService _mqService = Substitute.For<IMessageQueueService>();
+        private readonly IDistributedSetRepo _repo = Substitute.For<IDistributedSetRepo>();
         private readonly RedisConfig _redisConfig = new() { FolderCollectionName = "Test" };
         private readonly MessageQueueConfig _rmqConfig = new() { FileEventSubscriptionId = "Test" };
         private const string FolderName = "TestFolder";
@@ -22,7 +23,7 @@ namespace FileListenerTests.Services
 
             _config.Value.Returns(BuildCfg(size));
 
-            Assert.Throws<ArgumentException>(() => new FolderMonitoringService(_mqService, _config, _logger, _utilities));
+            Assert.Throws<ArgumentException>(() => new FolderMonitoringService(_mqService, _config, _logger, _repo));
         }
 
         [Fact]
@@ -33,29 +34,29 @@ namespace FileListenerTests.Services
 
             _config.Value.Returns(BuildCfg(size));
 
-            Assert.Throws<ArgumentException>(() => new FolderMonitoringService(_mqService, _config, _logger, _utilities));
+            Assert.Throws<ArgumentException>(() => new FolderMonitoringService(_mqService, _config, _logger, _repo));
         }
 
         [Fact]
-        public void StopMonitoring_ValueExists_ReturnsTrue()
+        public async void StopMonitoring_ValueExists_ReturnsTrue()
         {
             _config.Value.Returns(BuildCfg());
             _utilities.IsValidFolder(FolderName).Returns(true);
 
-            var service = new FolderMonitoringService(_mqService, _config, _logger, _utilities);
-            service.StartMonitoring(FolderName);
+            var service = new FolderMonitoringService(_mqService, _config, _logger, _repo);
+            await service.StartMonitoring(FolderName);
 
-            var result = service.StopMonitoring(FolderName);
+            var result = await service.StopMonitoring(FolderName);
 
             Assert.True(result);
         }
 
         [Fact]
-        public void StopMonitoring_ValueDoesNotExist_ReturnsFalse()
+        public async void StopMonitoring_ValueDoesNotExist_ReturnsFalse()
         {
             _config.Value.Returns(BuildCfg());
-            var service = new FolderMonitoringService(_mqService, _config, _logger, _utilities);
-            var result = service.StopMonitoring(FolderName);
+            var service = new FolderMonitoringService(_mqService, _config, _logger, _repo);
+            var result = await service.StopMonitoring(FolderName);
 
             Assert.False(result);
         }
@@ -66,16 +67,16 @@ namespace FileListenerTests.Services
             _config.Value.Returns(BuildCfg());
             _utilities.IsValidFolder(FolderName).Returns(true);
 
-            var service = new FolderMonitoringService(_mqService, _config, _logger, _utilities);
-            service.StartMonitoring(FolderName);
+            var service = new FolderMonitoringService(_mqService, _config, _logger, _repo);
+            await service.StartMonitoring(FolderName);
 
             await service.StopAsync(CancellationToken.None);
-            var result = service.StopMonitoring(FolderName);
+            var result = await service.StopMonitoring(FolderName);
 
             Assert.False(result);
         }
 
-        private AppConfig BuildCfg(int internalBufferSizeKb=8)
+        private AppConfig BuildCfg(int internalBufferSizeKb = 8)
         {
             return new AppConfig
             {

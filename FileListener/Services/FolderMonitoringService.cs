@@ -5,6 +5,8 @@ using Microsoft.Extensions.Options;
 using System.Threading.Tasks.Dataflow;
 using Common.DTO;
 using FileListener.Constants;
+using FileListener.Repos.Interfaces;
+using FileListener.Model;
 
 namespace FileListener.Services
 {
@@ -12,50 +14,61 @@ namespace FileListener.Services
     {
         private readonly IMessageQueueService _msgQService;
         private readonly ILogger<FolderMonitoringService> _logger;
-        private readonly IUtilitiesService _utilities;
-        private readonly Dictionary<string, CancellationTokenSource> _monitoringTokens = new();
-        private readonly int _bufferSize;
+        private readonly IDistributedSetRepo _repo;
+        private readonly Dictionary<string, FileSystemWatcherWrapper> _watchers = new();
+        private readonly int _watcherBufferSize;
         private readonly string _subscriptionId;
-        private readonly FileSystemEventHandler _eventHandler;
-        private readonly RenamedEventHandler _renameEventHandler;
+        private readonly ActionBlock<FileSystemEventArgs> _eventInterceptor;
         private readonly ErrorEventHandler _errorHandler;
 
-        public FolderMonitoringService(IMessageQueueService msgQService, IOptions<AppConfig> cfg, ILogger<FolderMonitoringService> logger, IUtilitiesService utilities)
+        public FolderMonitoringService(IMessageQueueService msgQService, IOptions<AppConfig> cfg, ILogger<FolderMonitoringService> logger, IDistributedSetRepo repo)
         {
             _msgQService = msgQService;
             _logger = logger;
-            _utilities = utilities;
-            var bufferSizeKb = cfg.Value.FolderMonitoringConfig.InternalBufferSizeKb;
-            _bufferSize = GetVerifiedBufferSizeInBytes(bufferSizeKb);
+            _repo = repo;
             _subscriptionId = cfg.Value.MessageQueueConfig.FileEventSubscriptionId;
-
-            var eventInterceptor = ConfigureEventInterceptor(cfg.Value.FolderMonitoringConfig.EventInterceptorCfg);
-            _eventHandler = (o, e) => eventInterceptor.Post(e);
-            _renameEventHandler = (o, e) => eventInterceptor.Post(e);
-            _errorHandler = (o, e) => { _logger.LogError("Error Listening To Folder {o}: {e}", (o as FileSystemWatcher)?.Path ,e.GetException());};
+            var bufferSizeKb = cfg.Value.FolderMonitoringConfig.InternalBufferSizeKb;
+            _watcherBufferSize = GetVerifiedBufferSizeInBytes(bufferSizeKb);
+            _eventInterceptor = ConfigureEventInterceptor(cfg.Value.FolderMonitoringConfig);
+            _errorHandler = (o, e) => { _logger.LogError("Error Listening To Folder {o}: {e}", (o as FileSystemWatcher)?.Path, e.GetException()); };
         }
 
-        public bool StartMonitoring(string folderName)
+        public async Task<bool> StartMonitoring(string folderName)
         {
-            if (!_utilities.IsValidFolder(folderName))
-            {
-                return false;
-            }
             _logger.LogInformation("Started Monitoring {folderName}", folderName);
-            if (_monitoringTokens.ContainsKey(folderName)) return false;
-            var cts = new CancellationTokenSource();
-            _monitoringTokens[folderName] = cts;
+            if (_watchers.ContainsKey(folderName)) return false;
 
-            Task.Run(() => MonitorFolder(folderName), cts.Token);
-            return true;
+            var watcher = new FileSystemWatcherWrapper(folderName, _watcherBufferSize, e => _eventInterceptor.Post(e), _errorHandler);
+            _watchers[folderName] = watcher;
+            try
+            {
+                watcher.StartWatch();
+                await _repo.CreateAsync(folderName);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to start monitoring {folderName}: {ex}");
+            }
         }
 
-        public bool StopMonitoring(string folderName)
+        public async Task<bool> StopMonitoring(string folderName)
         {
             _logger.LogInformation("Stopped Monitoring {folderName}", folderName);
-            if (!_monitoringTokens.TryGetValue(folderName, out var cts)) return false;
-            cts.Cancel();
-            _monitoringTokens.Remove(folderName);
+            if (!_watchers.TryGetValue(folderName, out var watcher)) return false;
+            try
+            {
+                watcher.StopWatch();
+                watcher.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed Stopping watch for {folderName}: {msg}", folderName, ex.Message);
+            }
+            finally
+            {
+                await _repo.DeleteAsync(folderName);
+            }
             return true;
         }
 
@@ -65,34 +78,34 @@ namespace FileListener.Services
             return Task.CompletedTask;
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Stopping FolderMonitoringService");
-            foreach (var folderName in _monitoringTokens.Keys)
+            foreach (var folderName in _watchers.Keys)
             {
-                StopMonitoring(folderName);
+                await StopMonitoring(folderName);
             }
-            return Task.CompletedTask;
         }
 
-        private void MonitorFolder(string folderName)
+        private void ActionSendMsg(FileSystemEventArgs e)
         {
-            using var watcher = new FileSystemWatcher
+            var msgToSend = new FileEventEmittedMessage
             {
-                EnableRaisingEvents = true,
-                IncludeSubdirectories = true,
-                InternalBufferSize = _bufferSize,
-                NotifyFilter = Const.NotifyFilters,
-                Path = folderName
+                ChangeType = e.ChangeType.ToString(),
+                FullPath = e.FullPath,
+                EventDate = DateTime.UtcNow
             };
+            _msgQService.Send(_subscriptionId, msgToSend);
+        }
 
-            watcher.Changed += _eventHandler;
-            watcher.Created += _eventHandler;
-            watcher.Deleted += _eventHandler;
-            watcher.Renamed += _renameEventHandler;
-            watcher.Error += _errorHandler;
-
-            watcher.EnableRaisingEvents = true;
+        private ActionBlock<FileSystemEventArgs> ConfigureEventInterceptor(FolderMonitoringConfig cfg)
+        {
+            var options = new ExecutionDataflowBlockOptions
+            {
+                MaxDegreeOfParallelism = cfg.EventInterceptorCfg.MaxParallelism,
+                BoundedCapacity = cfg.EventInterceptorCfg.MaxMessagesPerBuffer,
+            };
+            return new ActionBlock<FileSystemEventArgs>(ActionSendMsg, options);
         }
 
         private static int GetVerifiedBufferSizeInBytes(int cfgBufferSize)
@@ -107,26 +120,6 @@ namespace FileListener.Services
             }
 
             return cfgBufferSize * 1024;
-        }
-
-        private void ActionSendMsg(FileSystemEventArgs e)
-        {
-            var msgToSend = new FileEventEmittedMessage
-            {
-                EventArgs = e,
-                HandledDateTimeUtc = DateTime.UtcNow
-            };
-            _msgQService.Send(_subscriptionId, msgToSend);
-        }
-
-        private ActionBlock<FileSystemEventArgs> ConfigureEventInterceptor(EventInterceptorCfg cfg)
-        {
-            var options = new ExecutionDataflowBlockOptions
-            {
-                MaxDegreeOfParallelism = cfg.MaxParallelism,
-                BoundedCapacity = cfg.MaxMessagesPerBuffer
-            };
-            return new ActionBlock<FileSystemEventArgs>(ActionSendMsg, options);
         }
 
     }

@@ -25,8 +25,8 @@ namespace FileListener.Services
         {
             await ValidateAddFolder(folderName);
 
-            var started = _monitoringService.StartMonitoring(folderName);
-            return started && await _repo.CreateAsync(folderName);
+            var started = await _monitoringService.StartMonitoring(folderName);
+            return started;
         }
 
         public async Task<List<string>> GetAllFoldersAsync()
@@ -37,8 +37,8 @@ namespace FileListener.Services
         public async Task<bool> RemoveFolderAsync(string folderName)
         {
             await ValidateRemoveFolder(folderName);
-            var stopped = _monitoringService.StopMonitoring(folderName);
-            return stopped && await _repo.DeleteAsync(folderName);
+            var stopped = await _monitoringService.StopMonitoring(folderName);
+            return stopped;
         }
 
         private async Task ValidateAddFolder(string folderName)

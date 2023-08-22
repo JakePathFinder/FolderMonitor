@@ -30,7 +30,7 @@ namespace EventManager.Services
             {
                 throw new ArgumentException("Empty folder");
             }
-            return _repo.QueryLastEventsAsync(numEvents, folderName);
+            return _repo.QueryLastEventsAsync(numEvents, folderName:folderName);
         }
 
         public Task<List<FileEvent>> QueryByEventAsync(int numEvents, string? eventType = null)
@@ -40,7 +40,7 @@ namespace EventManager.Services
             {
                 throw new ArgumentException($"Empty event {eventType}");
             }
-            return _repo.QueryLastEventsAsync(numEvents, eventType);
+            return _repo.QueryLastEventsAsync(numEvents, eventType:eventType);
         }
 
         private void VerifyNumEvents(int numEvents)

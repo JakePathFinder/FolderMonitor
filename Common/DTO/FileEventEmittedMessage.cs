@@ -2,7 +2,8 @@
 {
     public class FileEventEmittedMessage
     {
-        public required FileSystemEventArgs EventArgs { get; init; }
-        public required DateTime HandledDateTimeUtc { get; init; }
+        public required string FullPath { get; set; }
+        public required string ChangeType { get; set; }
+        public DateTime EventDate { get; set; }
     }
 }

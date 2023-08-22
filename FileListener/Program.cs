@@ -13,7 +13,7 @@ builder.AddVaronisServices();
 
 builder.Services.AddSingleton<IFolderMonitoringService, FolderMonitoringService>();
 builder.Services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<IFolderMonitoringService>());
-builder.Services.AddScoped<IDistributedSetRepo, FolderRepo>();
+builder.Services.AddSingleton<IDistributedSetRepo, FolderRepo>();
 builder.Services.AddScoped<IFolderService, FolderService>();
 
 var app = builder.Build();

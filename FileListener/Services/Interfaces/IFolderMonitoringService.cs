@@ -2,7 +2,7 @@
 {
     public interface IFolderMonitoringService : IHostedService
     {
-        bool StartMonitoring(string folderName);
-        bool StopMonitoring(string folderName);
+        Task<bool> StartMonitoring(string folderName);
+        Task<bool> StopMonitoring(string folderName);
     }
 }

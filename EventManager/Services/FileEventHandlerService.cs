@@ -47,7 +47,7 @@ namespace EventManager.Services
             cancellationToken.ThrowIfCancellationRequested();
 
             //Ignore folders
-            if (_utilities.IsValidFolder(fileEventMsg.EventArgs.FullPath))
+            if (_utilities.IsValidFolder(fileEventMsg.FullPath))
             {
                 return;
             }
@@ -59,7 +59,7 @@ namespace EventManager.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed intercepting message for {path}: {err}", fileEventMsg.EventArgs.FullPath, ex.Message);
+                _logger.LogError("Failed intercepting message for {path}: {err}", fileEventMsg.FullPath, ex.Message);
             }
             
         }

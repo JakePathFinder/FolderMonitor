@@ -20,10 +20,10 @@ namespace EventManager.Model
         {
             return new FileEvent()
             {
-                EventType = message.EventArgs.ChangeType.ToString(),
-                FileName = Path.GetFileName(message.EventArgs.FullPath),
-                FolderName = Path.GetDirectoryName(message.EventArgs.FullPath) ?? throw new NoNullAllowedException("Cannot parse FileEvent path to folder name"),
-                EventDate = message.HandledDateTimeUtc
+                EventType = message.ChangeType,
+                FileName = Path.GetFileName(message.FullPath),
+                FolderName = Path.GetDirectoryName(message.FullPath) ?? throw new NoNullAllowedException("Cannot parse FileEvent path to folder name"),
+                EventDate = message.EventDate
             };
         }
     }
